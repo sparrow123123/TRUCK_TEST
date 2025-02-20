@@ -8,7 +8,7 @@ const cookieParser = require("cookie-parser");
 
 const app = express();
 app.use(express.json());
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(cookieParser());
 
 const db = mysql.createConnection({
@@ -26,7 +26,6 @@ db.connect((err) => {
 
 const SECRET_KEY = process.env.JWT_SECRET || "yourSecretKey";
 
-// **Register User**
 app.post("/register", async (req, res) => {
   const { username, password } = req.body;
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -34,14 +33,15 @@ app.post("/register", async (req, res) => {
     "INSERT INTO users (username, password) VALUES (?, ?)",
     [username, hashedPassword],
     (err, result) => {
-      if (err)
+      if (err) {
         return res.status(500).json({ error: "Username already exists" });
-      res.json({ message: "User registered!" });
+      } else {
+        res.json({ message: "User registered!" });
+      }
     }
   );
 });
 
-// **Login & Generate JWT**
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
   db.query(
@@ -65,19 +65,6 @@ app.post("/login", (req, res) => {
       res.json({ message: "Login successful" });
     }
   );
-});
-
-// **Protected Route**
-app.get("/profile", (req, res) => {
-  const token = req.cookies.token;
-  if (!token) return res.status(403).json({ error: "Unauthorized" });
-
-  try {
-    const user = jwt.verify(token, SECRET_KEY);
-    res.json({ message: `Hello, ${user.username}!` });
-  } catch (error) {
-    res.status(403).json({ error: "Invalid token" });
-  }
 });
 
 // **Logout (Clear Token)**
