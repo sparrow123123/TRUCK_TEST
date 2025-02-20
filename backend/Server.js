@@ -12,10 +12,11 @@ app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(cookieParser());
 
 const db = mysql.createConnection({
-  host: "localhost",
+  host: "127.0.0.1",
   user: "root",
   password: "9943060731",
   database: "jwt_auth",
+  port: "3306",
 });
 
 db.connect((err) => {
